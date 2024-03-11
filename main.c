@@ -26,6 +26,14 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	
+	struct stat st;
+	if(stat(filename) == -1) {
+		perror("Failed to process file stats for given file");
+		return 1;
+	}
+	long filesize = st.st_size;
+	printf("Filesize: %ldB", filesize);
+
 	return 0;
 }
 
