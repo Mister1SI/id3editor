@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 	
 	// Get file size
 	struct stat st;
-	if(stat(filename) == -1) {
+	if(stat(filename, &st) == -1) {
 		perror("Failed to process file stats for given file");
 		return 2;
 	}
@@ -58,5 +58,9 @@ int main(int argc, char** argv) {
 	}
 
 	return 0;
+}
+
+void help() {
+	puts("Help");
 }
 
