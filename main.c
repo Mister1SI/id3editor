@@ -4,7 +4,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <stdlib.h>
 
 void help();
 
@@ -176,6 +176,10 @@ void strip_newlines(char* text, int bytes) {
 }
 
 void help() {
-	puts("Help");
+	puts("id3editor - ID3v1 Reader & Editor\n"
+	"usage:\n"
+	"id3editor				- Display help menu. \n"
+	"id3editor <filename>			- Display ID3v1 data.\n"
+	"id3editor <filename> [t a l y c]	- Edit title, artist, album, year, or comment, respectively.");
 }
 
