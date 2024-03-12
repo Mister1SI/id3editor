@@ -3,6 +3,8 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <string.h>
+
 
 void help();
 
@@ -17,13 +19,30 @@ void help();
 // 4:	mmap() failed
 //
 
+typedef enum {
+	TITLE,
+	ARTIST,
+	ALBUM,
+	YEAR,
+	COMMENT,
+	UNKNOWN
+} EditType;
+
+int edit_v1(char* pdata_start, EditType et, char* new_field);
+void strip_newlines(char* text, int bytes);
+
 int main(int argc, char** argv) {
 	char* filename;
 	char field;
+	int edit;
 	if(argc == 1) {
 		help();
 		return 0;
+	} else if(argc == 2) {
+		filename = argv[1];
+		edit = 0;
 	} else if(argc == 3) {
+		edit = 1;
 		filename = argv[1];
 		field = argv[2][0];
 	} else {
@@ -72,11 +91,88 @@ int main(int argc, char** argv) {
 		write(1, "\n\tComment:\t", 12);
 		write(1, pv1_start + 97, 30);
 		puts("");
+
+		// If edit mode is enabled, process that
+		if(edit) {
+			puts("Editing field");
+			char* buffer = malloc(256);
+			memset(buffer, 0, 256);
+			switch(field) {
+				case 't':
+					printf("Enter new title: ");
+					fflush(stdout);
+					read(0, buffer, 256);
+					strip_newlines(buffer, 30);
+					edit_v1(pv1_start, TITLE, buffer);
+					break;
+				case 'a':
+					printf("Enter new artist: ");
+					fflush(stdout);
+					read(0, buffer, 256);
+					strip_newlines(buffer, 30);
+					edit_v1(pv1_start, ARTIST, buffer);
+					break;
+				case 'l':
+					printf("Enter new album: ");
+					fflush(stdout);
+					read(0, buffer, 256);
+					strip_newlines(buffer, 30);
+					edit_v1(pv1_start, ALBUM, buffer);
+					break;
+				case 'y':
+					printf("Enter new year: ");
+					fflush(stdout);
+					read(0, buffer, 256);
+					strip_newlines(buffer, 4);
+					edit_v1(pv1_start, YEAR, buffer);
+					break;
+				case 'c':
+					printf("Enter new comment: ");
+					fflush(stdout);
+					read(0, buffer, 256);
+					strip_newlines(buffer, 30);
+					edit_v1(pv1_start, COMMENT, buffer);
+					break;
+			}
+
+		}
+
 	} else {
 		puts("Did not find a v1 tag.");
 	}
-
+	
+	munmap(pfile, filesize);
 	return 0;
+}
+
+int edit_v1(char* pdata_start, EditType et, char* new_field) {
+	switch(et) {
+		case TITLE:
+			memcpy(pdata_start + 3, new_field, 30);
+			return 0;
+		case ARTIST:
+			memcpy(pdata_start + 33, new_field, 30);
+			return 0;
+		case ALBUM:
+			memcpy(pdata_start + 63, new_field, 30);
+			return 0;
+		case YEAR:
+			memcpy(pdata_start + 93, new_field, 4);
+			return 0;
+		case COMMENT:
+			memcpy(pdata_start + 97, new_field, 30);
+			return 0;
+		case UNKNOWN:
+			return -1;
+	}
+}
+
+
+void strip_newlines(char* text, int bytes) {
+	for(int i = 0; i < bytes; i++) {
+		if(text[i] == '\n')
+			text[i] = 0;
+	}
 }
 
 void help() {
